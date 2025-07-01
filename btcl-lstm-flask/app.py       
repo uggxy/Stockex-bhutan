@@ -1,0 +1,48 @@
+from flask import Flask, render_template, send_from_directory
+import os
+from scraper import update_cleaned_data
+from model_utils import preprocess_data, predict_future
+from tensorflow.keras.models import load_model
+import matplotlib.pyplot as plt
+import pandas as pd
+
+app = Flask(__name__)
+
+@app.route("/")
+def index():
+    # Step 1: Update data
+    df = update_cleaned_data()
+
+    # Step 2: Load model and scaler
+    model = load_model("model/btcl_lstm_model.h5")
+    _, _, _, _, scaler, _ = preprocess_data()
+    scaled = scaler.transform(df['BTCL'].values.reshape(-1, 1))
+
+    # Step 3: Predict future prices
+    future_days = 30
+    future_pred = predict_future(model, scaled, future_days, scaler)
+    future_dates = pd.date_range(df['Date'].iloc[-1] + pd.Timedelta(days=1), periods=future_days)
+
+    # Step 4: Generate plot
+    plt.figure(figsize=(12,6))
+    plt.plot(df['Date'], df['BTCL'], label="Historical", color="blue")
+    plt.plot(future_dates, future_pred, label="Forecast", linestyle="--", color="orange")
+    plt.xlabel("Date")
+    plt.ylabel("BTCL Price")
+    plt.title("BTCL Stock Price Forecast")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+
+    os.makedirs("static", exist_ok=True)
+    plt.savefig("static/plot.png")
+    plt.close()
+
+    return render_template("index.html", latest_price=round(df['BTCL'].iloc[-1], 2), forecast_days=future_days)
+
+@app.route("/static/<path:filename>")
+def static_file(filename):
+    return send_from_directory("static", filename)
+
+if __name__ == "__main__":
+    app.run(debug=True)

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BTCL Stock Forecast</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2em; }
+        h1 { color: #2E86C1; }
+        img { width: 100%; max-width: 1000px; border: 1px solid #ccc; }
+        .summary { margin-bottom: 2em; }
+    </style>
+</head>
+<body>
+    <h1>📈 BTCL Stock Price Prediction Dashboard</h1>
+    <div class="summary">
+        <p>Latest recorded price: <strong>Nu. {{ latest_price }}</strong></p>
+        <p>Forecasting next <strong>{{ forecast_days }}</strong> days...</p>
+    </div>
+    <img src="/static/plot.png" alt="BTCL Price Prediction">
+</body>
+</html>

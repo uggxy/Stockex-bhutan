@@ -1,0 +1,30 @@
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from bs4 import BeautifulSoup
+import pandas as pd
+import time
+
+def scrape_btcl_data():
+    url = "https://www.rsebl.org.bt/stock-market-data"  # Update if needed
+    options = Options()
+    options.headless = True
+    driver = webdriver.Chrome(options=options)
+    driver.get(url)
+    time.sleep(5)
+    soup = BeautifulSoup(driver.page_source, "html.parser")
+    driver.quit()
+
+    table = soup.find("table")
+    df = pd.read_html(str(table))[0]
+    df.columns = df.columns.str.strip()
+    df = df[df['Stock'] == 'BTCL']
+    df['Date'] = pd.to_datetime(df['Date'])
+    df = df[['Date', 'Close']].rename(columns={'Close': 'BTCL'})
+    return df
+
+def update_cleaned_data():
+    new_df = scrape_btcl_data()
+    old_df = pd.read_csv("data/cleaned_stock_data.csv", parse_dates=['Date'])
+    combined = pd.concat([old_df, new_df]).drop_duplicates(subset='Date').sort_values('Date')
+    combined.to_csv("data/cleaned_stock_data.csv", index=False)
+    return combined

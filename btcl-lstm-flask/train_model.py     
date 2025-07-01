@@ -1,0 +1,9 @@
+from model_utils import preprocess_data, train_lstm_model
+import os
+
+X_train, X_val, y_train, y_val, scaler, _ = preprocess_data()
+model = train_lstm_model(X_train, y_train, X_val, y_val)
+
+os.makedirs("model", exist_ok=True)
+model.save("model/btcl_lstm_model.h5")
+print("✅ Model saved at model/btcl_lstm_model.h5")
